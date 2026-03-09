@@ -1,10 +1,31 @@
-from google import genai
+import requests
+import json
 
-client = genai.Client()
-
-response = client.models.generate_content(
-    model="gemini-3-flash-preview",
-    contents="Explain how AI works in a few words",
-)
-
-print(response.text)
+api_key = "your key goes here"
+prompt = input("meow\n")
+url = "https://gen.pollinations.ai/v1/chat/completions"
+headers = {
+    "Authorization": f"Bearer {api_key}",
+ 
+    "Content-Type": "application/json"
+}
+data = {
+    "model": "openai",
+    "messages": [
+        {"role": "user", "content": prompt}
+    ]
+}
+try:
+    response = requests.post(url, headers=headers, json=data)
+    print(f"Status Code: {response.status_code}")
+    print(f"Raw Response (first 500 chars): {response.text[:500]}")
+    ai_response = response.json()
+except json.JSONDecodeError:
+    print("Failed to decode JSON response")
+    ai_response = None
+if ai_response and "choices" in ai_response:
+    print(ai_response["choices"][0]["message"]["content"])
+elif ai_response and "error" in ai_response:
+    print(ai_response["error"]["message"])
+else:
+    print("No valid JSON response received.")
